@@ -6,7 +6,7 @@
 int main() {
     smov_sender_t* sender;
     smov_handle_t* handle;
-    char *text = "/dev/ttyACM0";
+    char *text = "/dev/ttyACM2";
 	smov_error_t err = smov_connect(text, &sender, &handle);
 	if (err.tag != OK) {
     	printf("fatal error: %s\n", smov_strerror(err));

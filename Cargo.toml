@@ -14,11 +14,11 @@ path = "src/main.rs"
 [lib]
 name = "smov"
 path = "src/lib/mod.rs"
-crate-type = ["staticlib", "rlib"]
+crate-type = ["dylib", "staticlib", "rlib"]
 
 [dependencies]
 serialport = "3.3"
-opencv = "0.33"
+opencv = { version = "0.33", optional = true }
 structopt = { version = "0.3", optional = true }
 
 [build-dependencies]
@@ -26,4 +26,5 @@ cbindgen = "0.13"
 
 [features]
 bin = ["structopt"]
+vision = ["opencv"]
 default = ["bin"]
