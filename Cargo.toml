@@ -14,7 +14,7 @@ path = "src/main.rs"
 [lib]
 name = "smov"
 path = "src/lib/mod.rs"
-crate-type = ["dylib", "staticlib", "rlib"]
+crate-type = ["staticlib", "rlib", "cdylib"]
 
 [dependencies]
 serialport = "3.3"

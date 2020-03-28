@@ -21,7 +21,8 @@ pub enum Error {
 #[allow(non_camel_case_types)]
 mod ffi {
     use crate::Error;
-    use std::ffi::CStr;
+    use core::ptr;
+    use std::ffi::{CStr, CString};
     use std::os::raw::{c_char, c_int};
     use std::sync::mpsc::Sender;
     use std::thread::JoinHandle;
@@ -116,6 +117,37 @@ mod ffi {
     #[no_mangle]
     pub unsafe extern "C" fn smov_set_speed(sender: *const sender_t, val: i16) -> bool {
         { &*sender }.0.send(val).is_ok()
+    }
+
+    /// List all the devices available for use with the library
+    ///
+    /// Each var is only the path of the device and can be handed in to smov_connect directly
+    ///
+    /// The caller is responsible to clean the memory, probably using smov_free_devices.
+    #[no_mangle]
+    pub unsafe extern "C" fn smov_list_devices() -> *mut *mut c_char {
+        if let Ok(out) = serialport::available_ports() {
+            let vec: Box<[_]> = out
+                .into_iter()
+                .map(|port| CString::new(port.port_name).unwrap().into_raw())
+                .chain(core::iter::once(ptr::null_mut()))
+                .collect();
+            { &mut *Box::into_raw(vec) }.as_mut_ptr()
+        } else {
+            ptr::null_mut()
+        }
+    }
+
+    /// Free the device list
+    #[no_mangle]
+    pub unsafe extern "C" fn smov_free_devices(devices: *mut *mut c_char) {
+        let mut dev_count = 0;
+        while *devices.add(dev_count) != ptr::null_mut() {
+            core::mem::drop(CString::from_raw(*devices));
+            dev_count += 1;
+        }
+        let devs = core::slice::from_raw_parts_mut(devices, dev_count);
+        core::mem::drop(Box::from_raw(devs));
     }
 
     /// Get the exit status of the communication

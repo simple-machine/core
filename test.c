@@ -6,8 +6,12 @@
 int main() {
     smov_sender_t* sender;
     smov_handle_t* handle;
-    char *text = "/dev/ttyACM2";
-	smov_error_t err = smov_connect(text, &sender, &handle);
+    char **devices = smov_list_devices();
+    if (devices[0] == NULL) {
+        printf("No devices could be found, try plugging one in");
+        return 1;
+    }
+	smov_error_t err = smov_connect(devices[0], &sender, &handle);
 	if (err.tag != OK) {
     	printf("fatal error: %s\n", smov_strerror(err));
     	if (err.tag == COMMUNICATION) {
@@ -27,5 +31,6 @@ int main() {
     	printf("fatal error: %s\n", smov_strerror(err));
     	return 1;
 	}
+	smov_free_devices(devices);
 	smov_drop_communication(sender);
 }
